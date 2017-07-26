@@ -52,6 +52,51 @@ class Trading():
             print(response)
             return ''
 
+class Trading_v1:
+    
+    def __init__(self, key, secret):
+        self.base_url = "https://api.bitfinex.com/"
+        self.key = key
+        self.secret = secret.encode()
+    
+    def _nonce(self):
+        """
+        Returns a nonce
+        Used in authentication
+        """
+        return str(int(round(time.time() * 1e9)))
+    
+    def sign_payload(self, payload):
+        payload_json = json.dumps(payload).encode()
+        payload_base = base64.b64encode(payload_json)
+        
+        h = hmac.new(self.secret, payload_base, hashlib.sha384)
+        signature = h.hexdigest()
+        
+        return {
+            "X-BFX-APIKEY": self.key,
+            "X-BFX-SIGNATURE": signature,
+            "X-BFX-PAYLOAD": payload_base
+        }
+        
+    
+    def _post(self, path, params = {}):
+        body = params
+        rawBody = json.dumps(body)
+        headers = self.sign_payload(params)
+        url = self.base_url + path
+        resp = requests.post(url, headers=headers, data=rawBody, verify=True)
+        return resp
+    
+    def balances(self):
+        payloadObject = {
+            'request':'/v1/balances',
+            'nonce':self._nonce(), #convert to string
+            'options':{}
+    }
+        
+        return self._post('v1/balances', payloadObject)
+    
 
 class Public:
     base_url = "https://api.bitfinex.com/"
