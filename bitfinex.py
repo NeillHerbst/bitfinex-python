@@ -118,6 +118,28 @@ class Trading_v1:
         }
         return self._post('/v1/balances', payload)
 
+    def cancel_order(self, order_id):
+        """
+        Cancel an order
+
+        Parameters
+        ----------
+        order_id: int
+                Order number to be canceled.
+
+        Returns
+        -------
+        response: response result of post request
+
+        """
+
+        payload = {
+            'request': '/v1/order/cancel',
+            'nonce': self._nonce(),
+            'order_id': order_id
+        }
+        return self._post('/v1/order/cancel', payload)
+
     def deposit(self, method, wallet_name, renew=0):
         payload = {
             'request': '/v1/deposit/new',
