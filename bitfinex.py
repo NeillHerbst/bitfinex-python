@@ -111,12 +111,51 @@ class Trading_v1:
         }
         return self._post('/v1/account_fees', payload)
 
+    def active_orders(self):
+        """
+        View your active orders.
+
+        Returns
+        -------
+        response:
+                A list of the results of /order/status for all your live orders.
+        """
+
+        payload = {
+            'request': '/v1/orders',
+            'nonce': self._nonce()
+        }
+        return self._post('/v1/orders', payload)
+
     def balances(self):
+        """
+        See your wallet balances
+
+        Returns
+        -------
+
+        """
         payload = {
             'request': '/v1/balances',
             'nonce': self._nonce()
         }
         return self._post('/v1/balances', payload)
+
+    def cancel_all_orders(self):
+        """
+        Cancel all active orders at once.
+
+        Returns
+        -------
+        response:
+                Confirmation of cancellation of the orders.
+        """
+        payload = {
+            'request': '/v1//order/cancel/all',
+            'nonce': self._nonce()
+        }
+        return self._post('/v1//order/cancel/all', payload)
+
 
     def cancel_order(self, order_id):
         """
@@ -203,12 +242,54 @@ class Trading_v1:
         }
         return self._post('/v1/order/new', payload)
 
+    def margin_info(self):
+        """
+        See your trading wallet information for margin trading.
+
+        Returns
+        -------
+        """
+        payload = {
+            'request': '/v1/margin_infos',
+            'nonce': self._nonce()
+        }
+        return self._post('/v1/margin_infos', payload)
+
+    def order_status(self, order_id):
+        """
+        Get the status of an order. Is it active? Was it cancelled? To what extent has it been executed? etc.
+
+        Parameters
+        ----------
+        order_id: int
+                Order id
+
+        Returns
+        -------
+        response:
+                Order details
+        """
+
+        payload = {
+            'request': '/v1/order/status',
+            'nonce': self._nonce(),
+            order_id: order_id
+        }
+        return self._post('/v1/order/status', payload)
+
+
+
+
+
+
     def summary(self):
         payload = {
             'request': '/v1/summary',
             'nonce': self._nonce()
         }
         return self._post('/v1/summary', payload)
+
+
     
 
 class Public:
