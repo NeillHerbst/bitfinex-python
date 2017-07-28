@@ -7,6 +7,173 @@ import os
 import time  # for nonce
 
 
+class PublicV1:
+    """
+    Class for unauthenticated interactions with the version 1 REST API
+    """
+    base_url = "https://api.bitfinex.com/"
+
+    def _get(self, path, *args, **kwargs):
+        return requests.get(self.base_url + path, kwargs)
+
+    def funding_book(self, currency):
+        """
+        Get the full margin funding book
+        
+        Parameters
+        ----------
+        currency: str   
+                    Currency to look for
+
+        Returns
+        -------
+
+        """
+        res = self._get('/v1/lendbook/{}'.format(currency))
+        return res.json()
+
+    def lends(self, currency):
+
+        """
+        Get a list of the most recent funding data for the given 
+        currency: total amount provided and Flash Return Rate (in % by 365 days) over time.
+        
+        Parameters
+        ----------
+        currency: str
+                  Currency to look for.
+
+        Returns
+        -------
+
+        """
+        res = self._get('/v1/lends/{}'.format(currency))
+        return res.json()
+
+    def order_book(self, symbol):
+        """
+        Get the full order book.
+        
+        Parameters
+        ----------
+        symbol: str
+                Symbol to look for
+
+        Returns
+        -------
+
+        """
+        res = self._get('/v1/book/{}'.format(symbol))
+        return res.json()
+
+    def stats(self, symbol):
+        """
+        Various statistics about the requested pair.
+        
+        Parameters
+        ----------
+        symbol: str
+                The symbol you want information about. 
+                You can find the list of valid symbols by calling the symbols methods.
+
+        Returns
+        -------
+
+        """
+        res = self._get('v1/stats/:{}'.format(symbol))
+        return res.json()
+
+    def symbols(self):
+        """
+        A list of symbol names
+        
+        Returns
+        -------
+
+        """
+        res = self._get('v1/symbols')
+        return res.json()
+
+    def symbol_details(self):
+        """
+        
+        Returns
+        -------
+
+        """
+        res = self._get('v1/symbols_details')
+        return res.json()
+
+
+    def ticker(self, symbol='btcusd'):
+        """
+        The ticker is a high level overview of the state of the market. 
+        It shows you the current best bid and ask, as well as the last 
+        trade price. It also includes information such as daily volume 
+        and how much the price has moved over the last day.
+        
+        Parameters
+        ----------
+        symbol: str
+                The symbol you want information about. 
+                You can find the list of valid symbols by calling the symbols method.
+
+        Returns
+        -------
+        response:
+                Result of enquiry
+
+        """
+
+        res = self._get('/v1/pubticker/{}'.format(symbol))
+        return res.json()
+
+    def trades(self, symbol):
+        """
+        Get a list of the most recent trades for the given symbol.
+        
+        Parameters
+        ----------
+        symbol: str
+                Symbol to look for.
+
+        Returns
+        -------
+
+        """
+        res = self._get('v1/trades/{}'.format(symbol))
+        return res.json()
+
+
+
+
+class PublicV2:
+    base_url = "https://api.bitfinex.com/"
+
+    def _get(self, path, *args, **kwargs):
+        return requests.get(self.base_url + path, kwargs)
+
+    def ticker(self, symbol='tBTCUSD'):
+        res = self._get('v2/ticker/{}'.format(symbol))
+        return res.json()
+
+    def trades(self, symbol='tBTCUSD'):
+        res = self._get('v2/trades/{}/hist'.format(symbol))
+        return res.json()
+
+    def books(self, symbol, precision):
+        res = self._get('v2/book/{0}/{1}'.format(symbol, precision))
+        return res.json()
+
+    def stats(self, key, size, symbol, side, section):
+        res = self._get('v2/stats1/{0}:{1}:{2}:{3}/{4}'.format(key, size, symbol, side, section))
+        return res.json()
+
+    def candles(self, timeframe, symbol, section):
+        res = self._get('v2/candles/trade:{0}:{1}/{2}'.format(timeframe, symbol, section))
+        return res.json()
+
+
 class Trading_v2():
     def __init__(self, key, secret):
         self.base_url = "https://api.bitfinex.com/"
@@ -417,32 +584,8 @@ class TradingV1:
         return self._post('/v1/summary', payload)
 
 
-    
 
-class Public:
-    base_url = "https://api.bitfinex.com/"
 
-    def _get(self, path, *args, **kwargs):
-        return requests.get(self.base_url + path, kwargs)
 
-    def ticker(self, symbol='tBTCUSD'):
-        res = self._get('v2/ticker/{}'.format(symbol))
-        return res.json()
-
-    def trades(self, symbol='tBTCUSD'):
-        res = self._get('v2/trades/{}/hist'.format(symbol))
-        return res.json()
-
-    def books(self, symbol, precision):
-        res = self._get('v2/book/{0}/{1}'.format(symbol, precision))
-        return res.json()
-
-    def stats(self, key, size, symbol, side, section):
-        res = self._get('v2/stats1/{0}:{1}:{2}:{3}/{4}'.format(key, size, symbol, side, section))
-        return res.json()
-
-    def candles(self, timeframe, symbol, section):
-        res = self._get('v2/candles/trade:{0}:{1}/{2}'.format(timeframe, symbol, section))
-        return res.json()
 
 
