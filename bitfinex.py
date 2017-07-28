@@ -53,9 +53,11 @@ class Trading_v2():
             return ''
 
 
+class TradingV1:
 
-class Trading_v1:
-
+    """
+    Class for interacting with the authenticated REST endpoints for version 1 of the API.
+    """
 
     def __init__(self, key, secret):
         self.base_url = "https://api.bitfinex.com"
@@ -69,7 +71,7 @@ class Trading_v1:
         """
         return str(int(round(time.time() * 1e9)))
 
-    def sign_payload(self, payload):
+    def _sign_payload(self, payload):
         payload_json = json.dumps(payload).encode()
         payload_base = base64.b64encode(payload_json)
 
@@ -85,7 +87,7 @@ class Trading_v1:
     def _post(self, path, params):
         body = params
         rawBody = json.dumps(body)
-        headers = self.sign_payload(body)
+        headers = self._sign_payload(body)
         url = self.base_url + path
         resp = requests.post(url, headers=headers, data=rawBody, verify=True)
 
@@ -105,6 +107,13 @@ class Trading_v1:
         return self._post('/v1/account_infos', payload)
 
     def account_fees(self):
+        """
+        Return information about your account (trading fees)
+        
+        Returns
+        -------
+
+        """
         payload = {
             'request': '/v1/account_fees',
             'nonce': self._nonce()
@@ -127,6 +136,20 @@ class Trading_v1:
         }
         return self._post('/v1/orders', payload)
 
+    def active_positions(self):
+        """
+        View your active positions.
+        
+        Returns
+        -------
+
+        """
+        payload = {
+            'request': '/v1/positions',
+            'nonce': self._nonce()
+        }
+        return self._post('/v1/positions', payload)
+
     def balances(self):
         """
         See your wallet balances
@@ -140,6 +163,27 @@ class Trading_v1:
             'nonce': self._nonce()
         }
         return self._post('/v1/balances', payload)
+
+    def balance_history(self, currency):
+        """
+        View all of your balance ledger entries.
+        
+        Parameters
+        ----------
+        currency: str
+                 The currency to look for.
+
+        Returns
+        -------
+        response:
+                Result of balance history enquiry.
+        """
+        payload = {
+            'request': '/v1/history',
+            'nonce': self._nonce(),
+            'currency': currency
+        }
+        return self._post('/v1/history', payload)
 
     def cancel_all_orders(self):
         """
@@ -155,7 +199,6 @@ class Trading_v1:
             'nonce': self._nonce()
         }
         return self._post('/v1//order/cancel/all', payload)
-
 
     def cancel_order(self, order_id):
         """
@@ -179,7 +222,64 @@ class Trading_v1:
         }
         return self._post('/v1/order/cancel', payload)
 
+    def claim_position(self, position_id, amount):
+        """
+        A position can be claimed if:
+
+        It is a long position: The amount in the last unit of the position pair that you have
+        in your trading wallet AND/OR the realized profit of the position is greater or equal
+        to the purchase amount of the position (base price position amount) and the funds which 
+        need to be returned. For example, for a long BTCUSD position, you can claim the position 
+        if the amount of USD you have in the trading wallet is greater than the base price the 
+        position amount and the funds used.
+        
+        It is a short position: The amount in the first unit of the position pair that you have 
+        in your trading wallet is greater or equal to the amount of the position and the margin funding used.
+        
+        Parameters
+        ----------
+        position_id: int
+                    Position ID
+        amount: int
+                The partial amount you wish to claim.
+
+        Returns
+        -------
+        response:
+                Result of position claim request
+        
+
+        """
+
+        payload = {
+            "request": "/v1/position/claim",
+            "nonce": self._nonce,
+            "position_id": position_id,
+            'amount': str(amount)
+        }
+        return self._post('/v1/position/claim', payload)
+
     def deposit(self, method, wallet_name, renew=0):
+        """
+        Return your deposit address to make a new deposit.
+        
+        Parameters
+        ----------
+        method: str
+                Method of deposit (methods accepted: “bitcoin”, “litecoin”, “ethereum”, 
+                “mastercoin” (tethers), "ethereumc", "zcash", "monero", "iota").
+        wallet_name: str
+                    Wallet to deposit in (accepted: “trading”, “exchange”, “deposit”). 
+                    Your wallet needs to already exist
+        renew: int, default is 0
+               If set to 1, will return a new unused deposit address
+
+        Returns
+        -------
+        response:
+                Response to post request
+
+        """
         payload = {
             'request': '/v1/deposit/new',
             'nonce': self._nonce(),
@@ -189,7 +289,39 @@ class Trading_v1:
         }
         return self._post('/v1/deposit/new', payload)
 
+    def deposit_withdrawal_history(self, currency):
+        """
+        View your past deposits/withdrawals.
+        
+        Parameters
+        ----------
+        currency: str
+                The currency to look for
+
+        Returns
+        -------
+        response:
+                Result of enquiry
+
+        """
+
+        payload = {
+            'request': '/v1/history/movements',
+            'nonce': self._nonce(),
+            'currency': currency
+        }
+        return self._post('/v1/history/movements', payload)
+
+
+
     def key_permissions(self):
+        """
+        Check the permissions of the key being used to generate this request.
+        
+        Returns
+        -------
+
+        """
         payload = {
             'request': '/v1/key_info',
             'nonce': self._nonce()
@@ -276,11 +408,6 @@ class Trading_v1:
             order_id: order_id
         }
         return self._post('/v1/order/status', payload)
-
-
-
-
-
 
     def summary(self):
         payload = {
