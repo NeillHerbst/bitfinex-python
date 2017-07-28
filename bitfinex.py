@@ -80,7 +80,7 @@ class PublicV1:
         -------
 
         """
-        res = self._get('v1/stats/:{}'.format(symbol))
+        res = self._get('v1/stats/{}'.format(symbol))
         return res.json()
 
     def symbols(self):
