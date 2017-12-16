@@ -1,10 +1,9 @@
-import requests  # pip install requests
+import requests
 import json
 import base64
 import hashlib
 import hmac
-import os
-import time  # for nonce
+import time
 from requests.exceptions import SSLError
 
 
@@ -155,8 +154,6 @@ class PublicV1:
         """
         res = self._get('v1/trades/{}'.format(symbol))
         return res.json()
-
-
 
 
 class PublicV2:
