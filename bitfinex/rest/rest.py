@@ -5,6 +5,7 @@ import hashlib
 import hmac
 import os
 import time  # for nonce
+from requests.exceptions import SSLError
 
 
 class PublicV1:
@@ -13,16 +14,27 @@ class PublicV1:
     """
     base_url = "https://api.bitfinex.com/"
 
-    def _get(self, path, *args, **kwargs):
-        return requests.get(self.base_url + path, kwargs)
+    def __init__(self, verify_ssl=False):
+        self.verify_ssl = verify_ssl
+
+    def _get(self, path):
+
+        if not self.verify_ssl:
+            try:
+                return requests.get(self.base_url + path)
+            except SSLError:
+                return requests.get(self.base_url + path, verify=False)
+
+        else:
+            return requests.get(self.base_url + path)
 
     def funding_book(self, currency):
         """
         Get the full margin funding book
-        
+
         Parameters
         ----------
-        currency: str   
+        currency: str
                     Currency to look for
 
         Returns
@@ -35,9 +47,9 @@ class PublicV1:
     def lends(self, currency):
 
         """
-        Get a list of the most recent funding data for the given 
+        Get a list of the most recent funding data for the given
         currency: total amount provided and Flash Return Rate (in % by 365 days) over time.
-        
+
         Parameters
         ----------
         currency: str
@@ -53,7 +65,7 @@ class PublicV1:
     def order_book(self, symbol):
         """
         Get the full order book.
-        
+
         Parameters
         ----------
         symbol: str
@@ -69,11 +81,11 @@ class PublicV1:
     def stats(self, symbol):
         """
         Various statistics about the requested pair.
-        
+
         Parameters
         ----------
         symbol: str
-                The symbol you want information about. 
+                The symbol you want information about.
                 You can find the list of valid symbols by calling the symbols methods.
 
         Returns
@@ -86,7 +98,7 @@ class PublicV1:
     def symbols(self):
         """
         A list of symbol names
-        
+
         Returns
         -------
 
@@ -96,7 +108,7 @@ class PublicV1:
 
     def symbol_details(self):
         """
-        
+
         Returns
         -------
 
@@ -107,15 +119,15 @@ class PublicV1:
 
     def ticker(self, symbol='btcusd'):
         """
-        The ticker is a high level overview of the state of the market. 
-        It shows you the current best bid and ask, as well as the last 
-        trade price. It also includes information such as daily volume 
+        The ticker is a high level overview of the state of the market.
+        It shows you the current best bid and ask, as well as the last
+        trade price. It also includes information such as daily volume
         and how much the price has moved over the last day.
-        
+
         Parameters
         ----------
         symbol: str
-                The symbol you want information about. 
+                The symbol you want information about.
                 You can find the list of valid symbols by calling the symbols method.
 
         Returns
@@ -131,7 +143,7 @@ class PublicV1:
     def trades(self, symbol):
         """
         Get a list of the most recent trades for the given symbol.
-        
+
         Parameters
         ----------
         symbol: str
@@ -236,7 +248,8 @@ class TradingV1:
         Returns a nonce
         Used in authentication
         """
-        return str(int(round(time.time() * 1e9)))
+        return str(int(round(time.time()**19)))
+        # return str(int(round(time.time()**3)))
 
     def _sign_payload(self, payload):
         payload_json = json.dumps(payload).encode()
@@ -276,7 +289,7 @@ class TradingV1:
     def account_fees(self):
         """
         Return information about your account (trading fees)
-        
+
         Returns
         -------
 
@@ -306,7 +319,7 @@ class TradingV1:
     def active_positions(self):
         """
         View your active positions.
-        
+
         Returns
         -------
 
@@ -334,7 +347,7 @@ class TradingV1:
     def balance_history(self, currency):
         """
         View all of your balance ledger entries.
-        
+
         Parameters
         ----------
         currency: str
@@ -395,14 +408,14 @@ class TradingV1:
 
         It is a long position: The amount in the last unit of the position pair that you have
         in your trading wallet AND/OR the realized profit of the position is greater or equal
-        to the purchase amount of the position (base price position amount) and the funds which 
-        need to be returned. For example, for a long BTCUSD position, you can claim the position 
-        if the amount of USD you have in the trading wallet is greater than the base price the 
+        to the purchase amount of the position (base price position amount) and the funds which
+        need to be returned. For example, for a long BTCUSD position, you can claim the position
+        if the amount of USD you have in the trading wallet is greater than the base price the
         position amount and the funds used.
-        
-        It is a short position: The amount in the first unit of the position pair that you have 
+
+        It is a short position: The amount in the first unit of the position pair that you have
         in your trading wallet is greater or equal to the amount of the position and the margin funding used.
-        
+
         Parameters
         ----------
         position_id: int
@@ -414,7 +427,7 @@ class TradingV1:
         -------
         response:
                 Result of position claim request
-        
+
 
         """
 
@@ -429,14 +442,14 @@ class TradingV1:
     def deposit(self, method, wallet_name, renew=0):
         """
         Return your deposit address to make a new deposit.
-        
+
         Parameters
         ----------
         method: str
-                Method of deposit (methods accepted: “bitcoin”, “litecoin”, “ethereum”, 
+                Method of deposit (methods accepted: “bitcoin”, “litecoin”, “ethereum”,
                 “mastercoin” (tethers), "ethereumc", "zcash", "monero", "iota").
         wallet_name: str
-                    Wallet to deposit in (accepted: “trading”, “exchange”, “deposit”). 
+                    Wallet to deposit in (accepted: “trading”, “exchange”, “deposit”).
                     Your wallet needs to already exist
         renew: int, default is 0
                If set to 1, will return a new unused deposit address
@@ -459,7 +472,7 @@ class TradingV1:
     def deposit_withdrawal_history(self, currency):
         """
         View your past deposits/withdrawals.
-        
+
         Parameters
         ----------
         currency: str
@@ -484,7 +497,7 @@ class TradingV1:
     def key_permissions(self):
         """
         Check the permissions of the key being used to generate this request.
-        
+
         Returns
         -------
 
@@ -582,10 +595,3 @@ class TradingV1:
             'nonce': self._nonce()
         }
         return self._post('/v1/summary', payload)
-
-
-
-
-
-
-
